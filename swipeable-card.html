@@ -114,6 +114,8 @@ A card that can be swiped to the left or right to move it out of the way.
       if (this.away && e.propertyName == 'opacity') {
         this.fire('swipeable-card-swipe-away', {direction: this.direction});
         this.swiped = true;
+      } else if (!this.away && e.propertyName == 'opacity') {
+        this.fire('swipeable-card-pull-back', {direction: this.direction});
       }
       e.stopPropagation();
     },
