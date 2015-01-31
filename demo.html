@@ -34,30 +34,11 @@
 
     <div id="cards">
 
-        <swipeable-card>Swipe Me and I disappear!</swipeable-card>
-        <swipeable-card id="renewable">Swipe Me and I'll go to the end of the deck!</swipeable-card>
-        <swipeable-card disableSwipe>I don't swipe!</swipeable-card>
-        <swipeable-card id="renewable">Swipe Me and I'll go to the end of the deck!</swipeable-card>
+        <swipeable-card removable renewable>Swipe Me and I'll return!</swipeable-card>
+        <swipeable-card removable>Swipe Me and I'll disappear!</swipeable-card>
         <swipeable-card disableSwipe>I don't swipe!</swipeable-card>
 
     </div>
-
-    <script>
-    document.querySelector('#cards').addEventListener('swipeable-card-swipe-away', function(e) {
-        e.target.parentNode.removeChild(e.target); // removes this card
-        if (e.target.id == "renewable") {
-            document.querySelector('#cards').appendChild(e.target); // adds this card to the end of the set of cards
-
-            // wait for 10ms so the animations can kick in
-            setTimeout(function() {
-                // set style and position back to (default)
-                e.target.style.opacity = 1;
-                e.target.style.transform = "translate3d(0px, 0px, 0px) rotate(0deg)";
-                e.target.style.webkitTransform = "translate3d(0px, 0px, 0px) rotate(0deg)";
-            }, 10);
-        }
-    });
-    </script>
 
 </body>
 

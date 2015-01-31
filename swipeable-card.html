@@ -18,7 +18,7 @@ A card that can be swiped to the left or right to move it out of the way.
 
 <link rel="stylesheet" href="swipeable-card.css" shim-shadowdom>
 
-<polymer-element name="swipeable-card" attributes="disableSwipe swiped">
+<polymer-element name="swipeable-card" attributes="disableSwipe removable renewable swiped">
     
 <script>
 
@@ -38,6 +38,26 @@ A card that can be swiped to the left or right to move it out of the way.
      * @default false
      */
     disableSwipe: false,
+
+     /**
+     * If true, the card will be removed from its parent
+     * deck when swiped.
+     *
+     * @attribute removable
+     * @type boolean
+     * @default true
+     */
+    removable: false,
+
+    /**
+     * If true, the card will return to the bottom of
+     * its parent deck.
+     *
+     * @attribute renewable
+     * @type boolean
+     * @default false
+     */
+    renewable: false,
 
     /**
      * Becomes `true` once the card has been swiped.  Set
@@ -114,6 +134,17 @@ A card that can be swiped to the left or right to move it out of the way.
       if (this.away && e.propertyName == 'opacity') {
         this.fire('swipeable-card-swipe-away', {direction: this.direction});
         this.swiped = true;
+        if (this.removable) {
+          e.target.parentNode.removeChild(e.target);
+        }
+        if (this.renewable) {
+          document.querySelector('#cards').appendChild(e.target); 
+          setTimeout(function() {
+              e.target.style.opacity = 1;
+              e.target.style.transform = "translate3d(0px, 0px, 0px) rotate(0deg)";
+              e.target.style.webkitTransform = "translate3d(0px, 0px, 0px) rotate(0deg)";
+          }, 1);
+        }
       }
       e.stopPropagation();
     },
