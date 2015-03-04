@@ -135,10 +135,11 @@ A card that can be swiped to the left or right to move it out of the way.
         this.fire('swipeable-card-swipe-away', {direction: this.direction});
         this.swiped = true;
         if (this.removable) {
+          var parent = e.target.parentNode.id;
           e.target.parentNode.removeChild(e.target);
         }
         if (this.renewable) {
-          document.querySelector('#cards').appendChild(e.target); 
+          document.querySelector('#' + parent).appendChild(e.target); 
           setTimeout(function() {
               e.target.style.opacity = 1;
               e.target.style.transform = "translate3d(0px, 0px, 0px) rotate(0deg)";
