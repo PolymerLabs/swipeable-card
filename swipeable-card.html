@@ -5,160 +5,147 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 A card that can be swiped to the left or right to move it out of the way.
 
 @element swipeable-card
 @homepage github.io
 -->
+<link rel="import" href="bower_components/polymer/polymer.html">
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="stylesheet" href="swipeable-card.css" shim-shadowdom="">
 
-<link rel="stylesheet" href="swipeable-card.css" shim-shadowdom>
-
-<polymer-element name="swipeable-card" attributes="disableSwipe removable renewable swiped">
-    
-<script>
-
-  Polymer('swipeable-card', {
-    
-    /**
-     * Fired when the card is swiped away.
-     *
-     * @event swipeable-card-swipe-away
-     */
-    
-    /**
-     * If true, the card can not be swiped.
-     *
-     * @attribute disableSwipe
-     * @type boolean
-     * @default false
-     */
-    disableSwipe: false,
-
-     /**
-     * If true, the card will be removed from its parent
-     * deck when swiped.
-     *
-     * @attribute removable
-     * @type boolean
-     * @default true
-     */
-    removable: true,
-
-    /**
-     * If true, the card will return to the bottom of
-     * its parent deck.
-     *
-     * @attribute renewable
-     * @type boolean
-     * @default false
-     */
-    renewable: false,
-
-    /**
-     * Becomes `true` once the card has been swiped.  Set
-     * back to `false` to reset the swipe state.
-     *
-     * @attribute swiped
-     * @type boolean
-     * @default false
-     */
-    swiped: false,
-    
-    noCurve: false,
-    offsetRatio: 0.2,
-    widthRatio: 3,
-    
-    eventDelegates: {
-      webkitTransitionEnd: 'transitionEnd',
-      transitionend: 'transitionEnd',
-      trackstart: 'trackStart',
-      trackx: 'trackx',
-      trackend: 'trackEnd'
-    },
-    
-    animate: function(x) {
-      var s = this.style;
-      var d = x > 0 ? 1 : -1;
-      var w = this._w * this.widthRatio;
-      var x1 = Math.max(0, Math.abs(x) - this._w * this.offsetRatio);
-      var r = Math.max(0, (w - x1) / w);
-      var y = w - Math.sqrt(w * w - x1 * x1);
-      var deg = (1 - r) * d * 90;
-      s.opacity = r;
-      var translate = 'translate3d(' + x + 'px,' + 
-          (this.noCurve ? 0 : y) + 'px,0)';
-      var rotate = 'rotate(' + deg + 'deg)';
-      s.transform = s.webkitTransform =
-          translate + (this.noCurve ? '' : ' ' + rotate);
-    },
-    
-    trackStart: function(e) {
-      if (!this.disableSwipe) {
-        e.preventTap();
-        this._w = this.offsetWidth;
-        this.classList.add('dragging');
-      }
-    },
-    
-    trackx: function(e) {
-      if (!this.disableSwipe) {
-        this.animate(e.dx);
-      }
-    },
-    
-    trackEnd: function(e) {
-      if (!this.disableSwipe) {
-        this.swipeEnd(Math.abs(e.dx) > this._w / 2 && e.dx * e.xDirection > 0, 
-            e.dx > 0);
-      }
-    },
-    
-    swipeEnd: function(away, dir) {
-      this.classList.remove('dragging');
-      this.away = away;
-      this.direction = dir ? 'right' : 'left';
-      if (away) {
+<dom-module id="swipeable-card">
+  <script>
+    Polymer({
+      is: 'swipeable-card',
+      listeners: {
+              webkitTransitionEnd: 'transitionEnd',
+              transitionend: 'transitionEnd',
+              track: 'trackThis',
+              trackstart: 'trackStart',
+              trackx: 'trackx',
+              trackend: 'trackEnd'
+        },
+      properties: {
+        /**
+         * Fired when the card is swiped away.
+         *
+         * @event swipeable-card-swipe-away
+         */
+        /**
+         * If true, the card can not be swiped.
+         *
+         * @attribute disableSwipe
+         * @type boolean
+         * @default false
+         */
+        disableSwipe: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+        noCurve: {
+          type: Boolean,
+          value: false
+        },
+        offsetRatio: {
+          type: Number,
+          value: 0.2
+        },
+        /**
+         * Becomes `true` once the card has been swiped.  Set
+         * back to `false` to reset the swipe state.
+         *
+         * @attribute swiped
+         * @type boolean
+         * @default false
+         */
+        swiped: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          observer: 'swipedChanged'
+        },
+        widthRatio: {
+          type: Number,
+          value: 3
+        }
+      },
+      animate: function (x) {
+        var s = this.style;
+        var d = x > 0 ? 1 : -1;
         var w = this._w * this.widthRatio;
-        this.animate(dir ? w : -w);
-      } else {
-        this.animate(0);
-      }
-    },
-    
-    transitionEnd: function(e) {
-      if (this.away && e.propertyName == 'opacity') {
-        this.fire('swipeable-card-swipe-away', {direction: this.direction});
-        this.swiped = true;
-        if (this.removable) {
-          var parent = e.target.parentNode.id;
-          e.target.parentNode.removeChild(e.target);
+        var x1 = Math.max(0, Math.abs(x) - this._w * this.offsetRatio);
+        var r = Math.max(0, (w - x1) / w);
+        var y = w - Math.sqrt(w * w - x1 * x1);
+        var deg = (1 - r) * d * 90;
+        s.opacity = r;
+        var translate = 'translate3d(' + x + 'px,' + (this.noCurve ? 0 : y) + 'px,0)';
+        var rotate = 'rotate(' + deg + 'deg)';
+        s.transform = s.webkitTransform = translate + (this.noCurve ? '' : ' ' + rotate);
+      },
+      trackThis: function(e) {
+        switch (e.detail.state) {
+          case 'start':
+            this.trackStart(e);
+            break;
+          case 'end':
+            this.trackEnd(e);
+            break;
+          case 'track':
+            this.trackx(e);
+            break;
         }
-        if (this.renewable) {
-          document.querySelector('#' + parent).appendChild(e.target); 
-          setTimeout(function() {
-              e.target.style.opacity = 1;
-              e.target.style.transform = "translate3d(0px, 0px, 0px) rotate(0deg)";
-              e.target.style.webkitTransform = "translate3d(0px, 0px, 0px) rotate(0deg)";
-          }, 1);
+      },
+      trackStart: function (e) {
+        if (!this.disableSwipe) {
+          // e.preventTap();
+          e.stopPropagation();
+          e.preventDefault();
+          this._w = this.offsetWidth;
+          Polymer.dom(this).classList.add('dragging');
+        }
+      },
+      trackx: function (e) {
+        if (!this.disableSwipe) {
+          this.animate(e.detail.dx);
+        }
+      },
+      trackEnd: function (e) {
+        if (!this.disableSwipe) {
+          console.log(e.detail.ddx);
+          // TODO: check better solution than e.detail.ddx >= 0
+          // this.swipeEnd(Math.abs(e.detail.dx) > this._w / 2 && e.detail.dx * e.detail.ddx > 0, e.detail.dx > 0);
+          this.swipeEnd(Math.abs(e.detail.dx) > this._w / 2 && e.detail.dx * e.detail.ddx >= 0, e.detail.dx > 0);
+        }
+      },
+      swipeEnd: function (away, dir) {
+        Polymer.dom(this).classList.remove('dragging');
+        this.away = away;
+        this.direction = dir ? 'right' : 'left';
+        if (away) {
+          var w = this._w * this.widthRatio;
+          this.animate(dir ? w : -w);
+        } else {
+          this.animate(0);
+        }
+      },
+      transitionEnd: function (e) {
+        if (this.away && e.propertyName == 'opacity') {
+          this.fire('swipeable-card-swipe-away', { direction: this.direction });
+          this.swiped = true;
+        }
+        e.stopPropagation();
+      },
+      swipedChanged: function () {
+        if (this.away != this.swiped) {
+          this.away = this.swiped;
+          Polymer.dom(this).classList.add('dragging');
+          this._w = this.offsetWidth;
+          this.animate(this.swiped ? this._w * this.widthRatio : 0);
         }
       }
-      e.stopPropagation();
-    },
-
-    swipedChanged: function() {
-      if (this.away != this.swiped) {
-        this.away = this.swiped;
-        this.classList.add('dragging');
-        this._w = this.offsetWidth;
-        this.animate(this.swiped ? this._w * this.widthRatio : 0);
-      }
-    }
-    
-  });
-</script>
-</polymer-element>
+    });
+  </script>
+</dom-module>
